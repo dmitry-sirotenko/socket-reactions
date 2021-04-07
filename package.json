@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "server": "node src/server.js",
+    "client": "vue-cli-service serve"
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "socket.io": "^4.0.1",
+    "socket.io-client": "^4.0.1",
     "vue": "^2.6.11"
   },
   "devDependencies": {

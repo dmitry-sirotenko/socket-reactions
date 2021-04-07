@@ -1,28 +1,63 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <template v-for="(symbol, code) in reactions">
+      <button :key="code" @click="handleReactionClick(code)">{{ symbol }}</button>
+    </template>
+
+    <div>
+      <template v-for="(symbol, index) in received">
+        <span :key="index">{{ reactions[symbol] }}</span>
+      </template>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import { io } from 'socket.io-client';
+
+const REACTIONS = {
+  like: '👍',
+  dislike: '👎',
+  heart: '❤️',
+  smile:  '🙂',
+  sad: '🙁',
+};
+
+const URL = 'http://localhost:3000';
+
+const Socket = io(URL, { autoConnect: false });
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
-</script>
+  data() {
+    return {
+      received: [],
+    };
+  },
+  computed: {
+    reactions: () => REACTIONS,
+  },
+  mounted() {
+    Socket.connect();
+    Socket.on('reaction', this.handleReactionMessage)
+  },
+  beforeDestroy() {
+    Socket.disconnect();
+  },
+  destroyed() {
+    Socket.off('reaction');
+  },
+  methods: {
+    handleReactionClick(code) {
+      this.updateReceived(code);
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+      Socket.emit('reaction', code);
+    },
+    handleReactionMessage(code) {
+      this.updateReceived(code);
+    },
+    updateReceived(code) {
+      this.received.push(code);
+    },
+  },
+};
+</script>
