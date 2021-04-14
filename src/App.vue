@@ -19,13 +19,19 @@ const REACTIONS = {
   like: '👍',
   dislike: '👎',
   heart: '❤️',
-  smile:  '🙂',
+  happy:  '🙂',
   sad: '🙁',
 };
 
 const URL = 'http://localhost:3000';
 
-const Socket = io(URL, { autoConnect: false });
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkRtaXRyeSIsImlhdCI6MTUxNjIzOTAyMiwidXNlciI6InNpcm90ZW5rby1kIn0.wGEkWakFCDmC2PnfMUCd4gps0vD2cOp8veT7OhDYLN8';
+
+const Socket = io(URL, {
+  autoConnect: false,
+  transports: ['websocket'],
+  auth: (cb) => cb({ token }),
+});
 
 export default {
   data() {
@@ -38,19 +44,20 @@ export default {
   },
   mounted() {
     Socket.connect();
-    Socket.on('reaction', this.handleReactionMessage)
+
+    Socket.on('reaction:send', this.handleReactionMessage)
   },
   beforeDestroy() {
     Socket.disconnect();
   },
   destroyed() {
-    Socket.off('reaction');
+    Socket.off('reaction:send');
   },
   methods: {
     handleReactionClick(code) {
       this.updateReceived(code);
 
-      Socket.emit('reaction', code);
+      Socket.emit('reaction:send', code);
     },
     handleReactionMessage(code) {
       this.updateReceived(code);
